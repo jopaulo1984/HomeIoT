@@ -67,7 +67,7 @@ void setup() {
 
     // em estudo --------------------------------
     String tk = server.arg("tk");
-    if (tk.length() == 0) {
+    if (tk.length() == 0 || tk != "k$Rt1z49G") {
       server.send(200, "text/json\r\nAccess-Control-Allow-Origin: *", "{\"error\":\"Usuário não autorizado.\"}");
       return;
     }
