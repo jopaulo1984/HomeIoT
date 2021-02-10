@@ -75,16 +75,15 @@ void Pump::doClock100ms() {
   count_pulse = 0;
   
   // calculo da vazao em L/H
+  // vazao(fr) [L/H] = ((600 - 120) / (82 - 16)) * (fr - 16) + 120 = 7.27 * fr + 3.68
+  // vazao(fr) [L/m] = vazao(fr) / 60 = (7.27 * fr) / 60 + (3.68 / 60) = 0.12 * f + 0.06
   if (fr == 0) {
     vazao = 0;
   } else {
-    vazao = ((600 - 120) / (82 - 16)) * fr + 3.64;
+    vazao = 0.121 * f + 0.0611;
   }
-  
-  // transformando para L/min
-  vazao = vazao / 60;
 
-  float dv = (vazao / 60) * 0.1; //l = l/s * s
+  float dv = vazao * 0.00167; //(vazao / 60) * 0.1; //l = l/s * s
 
   vacc += dv;
   
