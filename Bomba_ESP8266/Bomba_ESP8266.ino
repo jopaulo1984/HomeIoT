@@ -64,6 +64,14 @@ void setup() {
       server.send(200, "text/json\r\nAccess-Control-Allow-Origin: *", "{\"error\":\"O metodo deve ser POST.\"}");
       return;
     }
+
+    // em estudo --------------------------------
+    String tk = server.arg("tk");
+    if (tk.length() == 0) {
+      server.send(200, "text/json\r\nAccess-Control-Allow-Origin: *", "{\"error\":\"Usuário não autorizado.\"}");
+      return;
+    }
+    //-------------------------------------------
     
     String cmd = server.arg("cmd");
     if (cmd.length() == 0) {
