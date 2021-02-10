@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, user-scalable=1.0">
+    <title>Bomba CS 25</title>
+
+    <link rel="stylesheet" type="text/css" href="jpgui.css" />
+    <link rel="stylesheet" type="text/css" href="abast.app.css" />
+
+    <script src="jpgui.js"></script>
+    <script src="graphics.js"></script>
+    <script src="abast.app.js"></script>
+
+</head>
+
+<body>
+    <header class="header">
+        <button class="button" onclick="showmenu()">Menu</button>
+        <div class="title" style="display:inline-block">Bomba CS 25</div>
+    </header>
+    <div id="drawarea" style="display:inline-block;vertical-align:top;margin:10px;"></div>
+    <div class="left-menu" id="left-menu">
+        <div class="vertical-menuitem" onclick="hiddemenu()">Voltar</div>
+        <div class="vertical-menuitem" onclick="showInfos()">Informações</div>        
+        <div class="vertical-menuitem" onclick="configurar()">Configurar</div>
+    </div>
+    <table class="table-buttons">
+        <tr>
+            <td><button class="button" id="btnbmb" onclick="ligabomba()">Ligar Bomba</button></td>
+            <td><button class="button" id="btntst" onclick="modoteste()">Modo Manual</button></td>
+        <!--/tr>
+        <tr-->
+            <td><button class="button" onclick="resetstate()">Reset Estado</button></td>
+            <td><button class="button" onclick="resetvolume()">Reset Volume</button></td>
+        </tr>        
+    </table>
+</body>
+
+</html>
