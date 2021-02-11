@@ -88,30 +88,24 @@ void Pump::doClock100ms() {
   vacc += dv;
   
   if (vacc >= 1) {
-    vacc = 0.0;
-    if (volumeL == 999) {
-      volumeM3++;
-      volumeL = 0;
-    }else{
-      volumeL++;
-      volumeCount++;
-    }
-    save();
+    vacc = 0;
+    incVolume();
   }
   
   switch (estado) {
     case 0:
-      if (isOn() && (vazao < 5.0)) {
+      if (isOn() && (vazao < 5)) {
         vcount = 0;
         estado = 1;
       }
       break;
-    case 1:
+    case 1:      
       if (++vcount > TVCOUNT) {
         lcount = 0;
         estado = 2;
+        setOn(0);
         setLed(0);
-      } else if (vazao >= 5.0) {
+      } else if (vazao >= 5) {
         reset();
       }
       break;
@@ -124,6 +118,16 @@ void Pump::doClock100ms() {
   
 }
 
+void Pump::incVolume() {
+  volumeL++;
+  volumeCount++;
+  if (volumeL >= 1000) {
+    volumeM3++;
+    volumeL = 0;
+  }
+  save();
+}
+
 void Pump::resetVolumeCount() {
   volumeCount = 0;
   saveEEPROMInt16(8, volumeCount);
@@ -133,10 +137,7 @@ void Pump::resetVolume() {
   volumeCount = 0;
   volumeL = 0;
   volumeM3 = 0;
-  //vazPulsos = 0;
-  //pulsAnt = 0;
   vazao = 0.0;
-  //haPulsoVazao = false;
   count_pulse = 0;
 }
 
@@ -237,12 +238,22 @@ void AbastAgua::init() {
   pump.init();
 }
 
-void AbastAgua::doUpdate() {
-  
+void AbastAgua::doUpdate1ms() {
   pump.doUpdate();
+}
 
-  bool result; // = !pump.locked(); // & (pump.isOn() | isBtnOnPress());
+void AbastAgua::doUpdate100ms() {
+  
+  bool result;
 
+  pump.doClock100ms();
+
+  if (pump.locked() && caixa.isHi()) {
+    pump.reset();
+    setLed(0);
+    return;
+  }
+  
   if (!manual) {
     result = pump.isOn() | caixa.isLo() | isBtnOnPress();
     result &= !caixa.isHi();
@@ -252,32 +263,18 @@ void AbastAgua::doUpdate() {
   
   result &= !pump.locked();
 
-  pump.setOn(result);
-
-  if (caixa.isHi() && (pump.getState() > 0)) {
-    pump.reset();
-  }
+  pump.setOn(result);  
 
   if (pump.getState()!= LOCKED) {
     setLed(pump.isOn());
   }
   
-  /*  
-  if (!test) {
-    bool acc = (pump.isOn() | cistern.isLo() | isBtnOnPress()); //!cistern.isHi();
-    acc &= !pump.locked();
-    acc &= !cistern.isHi(); //(pump.isOn() | cistern.isLo() | isBtnOnPress());
-    pump.setOn(acc);
-    if (cistern.isHi() && (pump.getState() > 0)) {
-      pump.reset();
-    }
+}
+
+void AbastAgua::doUpdate1s() {
+  if (pump.locked()) {
+    setLed(!getLed());
   }
-  
-  if (pump.getState()!=LOCKED) {
-    setLed(pump.isOn());
-  }
-  */
-  
 }
 
 bool AbastAgua::isBtnOnPress() {
