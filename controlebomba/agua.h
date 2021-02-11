@@ -37,8 +37,6 @@ private:
   uint16_t volumeCount  = 0;
   uint16_t volumeL      = 0;
   uint16_t volumeM3     = 0;
-  //uint16_t vazPulsos    = 0;
-  //uint16_t pulsAnt      = 0;
   uint16_t vcount       = 0;
   uint16_t lcount       = 0;
   uint16_t TLOCK        = 36000; // x100ms
@@ -52,12 +50,13 @@ private:
 public:
   void init();
   void doClock100ms();
+  void incVolume();
   void resetVolume();
   void resetVolumeCount();
+  void saveVolume();
   void doUpdate();
   void reset();
   void save();
-  void saveVolume();
   void setTLock(int t);    // x100ms -> tempo da bomba bloqueada.
   void setTPriming(int t); // x100ms -> tempo de escorva.
   
@@ -85,7 +84,9 @@ public:
   Cistern caixa;
   
   void init();
-  void doUpdate();
+  void doUpdate1ms();
+  void doUpdate100ms();
+  void doUpdate1s();
   void reset();
   
   bool isBtnOnPress();

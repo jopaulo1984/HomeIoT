@@ -15,19 +15,20 @@ AnLex anlex;
 ISR(TIMER1_OVF_vect) {  //interrupção do TIMER1
   TCNT1 = TNCT1_VALUE;
   //
+  
+  abast.doUpdate1ms();
+  
   if (++tcount==100) {
     //100ms
-    abast.pump.doClock100ms();
-    tcount = 0; 
+    abast.doUpdate100ms();
+    tcount = 0;
     if (++scount==10) {
       //1s
       scount = 0;
-      if (abast.pump.locked()) {
-        setLed(!getLed());
-      }
+      abast.doUpdate1s();
     }
   }
-  abast.doUpdate();
+  
 }
 
 void iniciaTimer(){  
