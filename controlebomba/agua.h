@@ -88,6 +88,9 @@ public:
   void doUpdate100ms();
   void doUpdate1s();
   void reset();
+  void printJSONMeasures(bool ln = true);
+  void printJSONStatus(bool ln = true);
+  void printJSONInfos();
   
   bool isBtnOnPress();
   String getJSON();

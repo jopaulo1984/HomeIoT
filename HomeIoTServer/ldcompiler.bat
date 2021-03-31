@@ -1,0 +1,1 @@
+py "C:\Users\Joao\OneDrive\Arduino\HomeIoT\HomeIoTServer\lib\ldcompiler.py" %1

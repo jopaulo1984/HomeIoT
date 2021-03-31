@@ -40,7 +40,7 @@ void iniciaTimer(){
   TIMSK1 |= (1 << TOIE1);            // habilita a interrupção do TIMER1
 }
 
-String convertBoolToONOFFStr(bool value) {
+/*String convertBoolToONOFFStr(bool value) {
   if (value) {
     return "ON";
   }
@@ -53,9 +53,9 @@ void printPump() {
 
 void printMode() {
   Serial.println("{""\"manual""\":""\"" + convertBoolToONOFFStr(abast.isModeManual()) + """\"}");
-}
+}*/
 
-void execute(String cmd) {
+void execute(String cmd) {  
   uint8_t estado = 0;
   String temp = "";
   Token tk;
@@ -69,9 +69,11 @@ void execute(String cmd) {
         } else if (tk.value=="GET") {
           estado = 50;
         } else if (tk.value=="HELP") {
-          Serial.println("SET|GET INFO   - Retorna as informacoes do sistema.");
-          Serial.println("SET|GET MANUAL - Obtem ou define o modo 'MANUAL' do sistema. Valores:  ON|OFF");
-          Serial.println("SET|GET PUMP   - Obtem ou define o estado da bomba. Valores: ON|OFF");
+          Serial.println("GET INFO       - Retorna as informacoes do sistema.");
+          Serial.println("GET MEASURES   - Retorna as medições do sistema.");
+          Serial.println("GET STATUS     - Retorna os status do sistema.");
+          Serial.println("SET MANUAL     - Define o modo 'MANUAL' do sistema. Valores:  0|1");
+          Serial.println("SET PUMP       - Define o estado da bomba. Valores: 0|1");
           Serial.println("SET T_PRIMING  - Define o tempo de escorva em segundos.");
           Serial.println("SET T_LOCK     - Define o tempo de espera da bomba.");
           Serial.println("RESET STATE    - Redefine o estado da bomba.");
@@ -98,33 +100,40 @@ void execute(String cmd) {
         }
         break;
       case 4:
-        if (tk.value=="ON" or tk.value=="OFF") {
-          abast.setModeManual(tk.value=="ON");
-          printMode();
+        if (tk.value=="0" or tk.value=="1") {
+          abast.setModeManual(tk.value=="1");
+          abast.printJSONStatus();
           estado = 100;
         } else {
           estado = 101;
         }
         break;
       case 5:
-        if (tk.value=="ON" or tk.value=="OFF") {
-          abast.pump.setOn(tk.value=="ON");
-          printPump();
+        if (tk.value=="0" or tk.value=="1") {
+          abast.pump.setOn(tk.value=="1");
+          abast.printJSONStatus();
           estado = 100;
         } else {
           estado = 101;
         }
         break;
       case 50:
-        if (tk.value=="INFO") {
-          Serial.println(abast.getJSON());
+        if (tk.value=="MEASURES") {
+          abast.printJSONMeasures();
           estado = 100;
-        } else if (tk.value=="MANUAL") {
+        } else if (tk.value=="STATUS") {
+          abast.printJSONStatus();
+          estado = 100;
+        } else if (tk.value=="INFO") {
+          //Serial.println(abast.getJSON());
+          abast.printJSONInfos();
+          estado = 100;
+        /*} else if (tk.value=="MANUAL") {
           printMode();
           estado = 100;
         } else if (tk.value=="PUMP") {
           printPump();
-          estado = 100;
+          estado = 100;*/
         } else {
           estado = 101;
         }
@@ -133,7 +142,7 @@ void execute(String cmd) {
         if (tk.type==NUM) {
           abast.pump.setTPriming(tk.value.toInt());
           estado = 100;
-          Serial.println(abast.getJSON());
+          abast.printJSONInfos();
         } else {
           estado = 101;
         }
@@ -142,7 +151,7 @@ void execute(String cmd) {
         if (tk.type==NUM) {
           abast.pump.setTLock(tk.value.toInt());
           estado = 100;
-          Serial.println(abast.getJSON());
+          abast.printJSONInfos();
         } else {
           estado = 101;
         }
@@ -165,14 +174,14 @@ void execute(String cmd) {
     }
   }
   if (estado==101) {
-    Serial.println("Comando não reconhecido.");
+    Serial.println("{\"error\":\"Comando não reconhecido.\"}");
   }
   anlex.setText("");
 }
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(LED, OUTPUT);
   abast.init();
   iniciaTimer();
@@ -181,8 +190,11 @@ void setup() {
 String msg;
 void loop() {
   if (Serial.available() > 0) {
-    msg = "";
-    while (Serial.available() > 0) { msg.concat(Serial.readString()); }
+    msg = "";    
+    while (Serial.available() > 0) { 
+      msg.concat((char)Serial.read());
+      delay(1);
+    }
     execute(msg);
   }
 }

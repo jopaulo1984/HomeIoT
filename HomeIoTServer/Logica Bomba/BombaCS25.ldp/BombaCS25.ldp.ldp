@@ -1,0 +1,18 @@
+<project name="BombaCS25.ldp" compilecmd="C:\Users\Joao\OneDrive\Arduino\HomeIoT\HomeIoTServer\ldcompiler.bat" compileargs="&quot;$(PROJ_DIR)$(PROJ_NAME).il&quot;">
+  <diagrams>
+    <start>
+        <diagram file="init" />
+
+    </start>
+
+    <main>
+        <diagram file="main" />
+        <diagram file="Diagrama1" />
+
+    </main>
+
+    <functions>
+
+    </functions>
+  </diagrams>
+</project>
