@@ -1,4 +1,3 @@
-
 const AUT_MODE = "OFF";
 const MAN_MODE = "ON";
 
@@ -25,9 +24,8 @@ var infos;
 var opmode;
 
 function RequestPOST(url, dados, response) {
-    var xhttp = new XMLHttpRequest();
-	
-    xhttp.open("POST", url, true);
+    var xhttp = new XMLHttpRequest();	
+    xhttp.open("POST", "https://condominioparaty.com.br/iot/" + url, true);
     xhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
     xhttp.onreadystatechange = function () {
         if (this.readyState == 4) {
@@ -35,7 +33,7 @@ function RequestPOST(url, dados, response) {
         }
     };
 
-    xhttp.send(dados);
+    xhttp.send(dados); //`token=pEka15G61&device=t0R27g6/BombaCasa25&cmd=${cmd}`
 }
 
 function newWaitWindow(msg) {
@@ -45,6 +43,12 @@ function newWaitWindow(msg) {
     var dlg = newJPDialog({title: "  ", content: message});
     dlg.show();
     return dlg;
+}
+
+function sendCommand(cmd, response) {
+    RequestPOST("send.php", `token=pEka15G61&device=t0R27g6/BombaCasa25&cmd=${cmd}`, function (rtext) {
+        response(rtext);
+    });
 }
 
 function updateInfos(onupdated) {
@@ -62,7 +66,7 @@ function updateInfos(onupdated) {
 
     }
 
-    sendCommand("GET INFO", response);
+    RequestPOST("get.php", "token=pEka15G61&device=t0R27g6/BombaCasa25", response);
 
 }
 
@@ -96,7 +100,8 @@ function showInfos() {
 }
 
 function getONOFF(value) {
-    return value ? 'ON' : 'OFF';
+    if (value) return 'ON';
+    return 'OFF';
 }
 
 function getONOFFColor(value) {
@@ -111,8 +116,8 @@ function getFlowColor(value) {
 }
 
 function getCxHeight(value) {
-    if (value === 2) return 68;
-    if (value === 1) return 30;
+    if (value === 2) return 88;
+    if (value === 1) return 50;
     return 18;
 }
 
@@ -121,30 +126,28 @@ function update() {
     updating = true;
 
     updateInfos(function () {
-		        
-        var pmpst = infos['status']['pump'];
-        var measu = infos['measures'];
-        var hlevel = getCxHeight(measu['cxlevel']);
+
+        var hlevel = getCxHeight(infos['level']);
         
-        darea.itemconfig(bomba, { fillstyle: getONOFFColor(pmpst) });
-        darea.itemconfig(bmbestd, { text: 'Estado: ' + getONOFF(pmpst) });
-        darea.itemconfig(vazao, { value: measu['flowr'] });
-        darea.itemconfig(vcount, { text: 'Volume: ' + measu['vcount'] + ' L' });
-        darea.itemconfig(tubo1, { strokestyle: getFlowColor(measu['flowr']) });
-        darea.itemconfig(tubo2, { strokestyle: getFlowColor(measu['flowr']) });
-        darea.itemconfig(cxnivel, { y: 89 - hlevel, h: hlevel });
-        darea.itemconfig(lockled, { fillstyle: infos['status']['state'] == 2 ? 'red' : '#cccccc' });
+        darea.itemconfig(bomba, { fillstyle: getONOFFColor(infos['pump']) });
+        darea.itemconfig(bmbestd, { text: 'Estado: ' + getONOFF(infos['pump']) });
+        darea.itemconfig(vazao, { text: 'Fluxo: ' + infos['flowrate'].toFixed(1) + ' L/m' });
+        darea.itemconfig(vcount, { text: 'Volume: ' + infos['volumecount'] + ' L' });
+        darea.itemconfig(tubo1, { strokestyle: getFlowColor(infos['flowrate']) });
+        darea.itemconfig(tubo2, { strokestyle: getFlowColor(infos['flowrate']) });
+        darea.itemconfig(cxnivel, { y: 109 - hlevel, h: hlevel });
+        darea.itemconfig(lockled, { fillstyle: infos['state'] == 2 ? 'red' : '#cccccc' });
 
         var btnbmb = document.getElementById('btnbmb');
 
-        btnbmb.innerText = pmpst == 1 ? "Desligar Bomba" : "Ligar Bomba";
-        btnbmb.style.backgroundColor = pmpst == 1 ? "#ffcccc" : "#ccffcc";
+        btnbmb.innerText = infos['pump'] == 1 ? "Desligar Bomba" : "Ligar Bomba";
+        btnbmb.style.backgroundColor = infos['pump'] == 1 ? "#ffcccc" : "#ccffcc";
 
-        setbtnmode(infos['status']['manual']);
+        setbtnmode(infos['manual']);
 
         updating = false;
 
-        setTimeout(update, 1000);
+        setTimeout(update, 2000);
 
     });
 
@@ -155,58 +158,36 @@ function update() {
 function draw() {
 
     //cisterna
-    darea.createRectangle(10, 210, 80, 80);
+    darea.createRectangle(10, 210, 100, 100);
     darea.createText(10, 200, { text: "CISTERNA", font: bfont });
-    darea.createRectangle(11, 218, 78, 70, { strokestyle: '#88ddff', fillstyle: '#88ddff' });
+    darea.createRectangle(11, 240, 98, 68, { strokestyle: '#88ddff', fillstyle: '#88ddff' });
 
     //bomba
-    bomba = darea.createCircle(180, 180, 20, { fillstyle: "#cccccc" });
-
-    lockled = darea.createCircle(220 , 185, 5, { fillstyle: "#cccccc" });
-    darea.createText(230, 190, { text: "Bloqueada", font: bfont });
-
-    darea.createText(150, 220, { text: "BOMBA", font: bfont });
-    bmbestd = darea.createText(150, 235, { text: "Estado: ?", font: bfont });
-    vcount = darea.createText(150, 250, { text: "Volume: ?", font: bfont });
-
-    vazao = new DashGauge({
-        x: 110,
-        y: 130,
-        label: "Vazão",
-        sufix: "L/min",
-        value: 0,
-        min: 0,
-        max: 20,
-        colorranges: [
-            {min: 10, max: 12, color: "yellow"},
-            {min: 0, max: 9.9, color: "red"},
-            {min: 12, max: 20, color: "#33FF33"}
-        ],        
-        width: 40,
-        thickness: 30,
-        font: {name:"Consolas", size:32}
-    });
-
-    darea.appendGElement(vazao);
+    bomba = darea.createCircle(200, 180, 20, { fillstyle: "#cccccc" });
+    darea.createText(150, 210, { text: "BOMBA", font: bfont });
+    bmbestd = darea.createText(150, 225, { text: "Estado: ?", font: bfont });
+    vazao = darea.createText(150, 240, { text: "Vazão: ?", font: bfont });
+    vcount = darea.createText(150, 255, { text: "Volume: ?", font: bfont });
+    lockled = darea.createCircle(240 , 190, 5, { fillstyle: "#cccccc" });
+    darea.createText(250, 195, { text: "Bloqueada", font: bfont });
 
     //cx d'agua
-    cxdagua = darea.createRectangle(280, 10, 79, 80);
-    cxnivel = darea.createRectangle(282, 108, 76, 0, { strokestyle: '#88ddff', fillstyle: '#88ddff' });
-    darea.createText(275, 105, { text: "CX. D'ÁGUA", font: bfont });
+    cxdagua = darea.createRectangle(300, 10, 100, 100);
+    cxnivel = darea.createRectangle(301, 108, 98, 0, { strokestyle: '#88ddff', fillstyle: '#88ddff' });
+    darea.createText(300, 125, { text: "CX. D'ÁGUA", font: bfont });
 
     //tubulacoes
-    tubo1 = darea.createPolyline([{ x: 80, y: 285 }, { x: 80, y: 180 }, { x: 180, y: 180 }], { linewidth: 4, strokestyle: '#cccccc' });
-    tubo2 = darea.createPolyline([{ x: 180, y: 160 }, { x: 220, y: 160 }, { x: 220, y: 20 }, { x: 290, y: 20 }], { linewidth: 4, strokestyle: '#cccccc' });
+    tubo1 = darea.createPolyline([{ x: 90, y: 300 }, { x: 90, y: 180 }, { x: 200, y: 180 }], { linewidth: 4, strokestyle: '#cccccc' });
+    tubo2 = darea.createPolyline([{ x: 200, y: 160 }, { x: 240, y: 160 }, { x: 240, y: 20 }, { x: 320, y: 20 }], { linewidth: 4, strokestyle: '#cccccc' });
 
     //sinotico
-    var x1 = 20;
-    var x2 = 30;
-    var y1 = 20;
-    darea.createText(x1 - 5, y1, { text: "Modo", font: bfont });
-    autled = darea.createCircle(x1 , y1 + 15, 5, { fillstyle: "#cccccc" });
-    darea.createText(x2, y1 + 20, { text: "Automático", font: bfont });
-    manled = darea.createCircle(x1 , y1 + 35, 5, { fillstyle: "#cccccc" });
-    darea.createText(x2, y1 + 40, { text: "Manual", font: bfont });
+    var x1 = 300;
+    var x2 = 310;
+    darea.createText(x1 - 5, 250, { text: "Modo", font: bfont });
+    autled = darea.createCircle(x1 , 265, 5, { fillstyle: "#cccccc" });
+    darea.createText(x2, 270, { text: "Automático", font: bfont });
+    manled = darea.createCircle(x1 , 285, 5, { fillstyle: "#cccccc" });
+    darea.createText(x2, 290, { text: "Manual", font: bfont });
 
     update();
 
@@ -228,9 +209,9 @@ function aguardaUpdate() {
 function ligabomba() {
     
     var btnbmb = document.getElementById('btnbmb');
-    var on = btnbmb.innerText == 'Ligar Bomba' ? 1 : 0; //btnbmb.innerText == 'Ligar Bomba'
+    var on = getONOFF(btnbmb.innerText == 'Ligar Bomba'); //btnbmb.innerText == 'Ligar Bomba'
     
-    if (on) {
+    if (on == "ON") {
         var wait = newWaitWindow("Ligando a bomba...");
     } else {
         var wait = newWaitWindow("Desligando a bomba...");
@@ -238,7 +219,12 @@ function ligabomba() {
     
     sendCommand(`SET PUMP ${on}`, function (rtext) {
         wait.destroy();
-        update();
+        /*try {
+            update();
+        } catch {
+            if (on == "ON") { newDialogMessage('Erro', 'Não foi possível ligar a bomba.'); }
+            else { newDialogMessage('Erro', 'Não foi possível desligar a bomba.'); }
+        }*/
     });
 
 }
@@ -257,15 +243,17 @@ function setbtnmode (modemanual) {
 
 function modoteste () {
     var btntst = document.getElementById('btntst');
-    var on = btntst.innerText == 'Modo Manual' ? 1 : 0;
-    if (on) {
+    var on = getONOFF(btntst.innerText == 'Modo Manual');
+    if (on == "ON") {
         var wait = newWaitWindow("Entrando no modo manual...");
     } else {
         var wait = newWaitWindow("Entrando do modo automático...");
     }
     sendCommand(`SET MANUAL ${on}`, function (result) {
         wait.destroy();
-        update();
+        /*var mode;
+        try {mode = JSON.parse(result)['manual'];} catch {mode = 0;}
+        setbtnmode(mode);*/
     });            
 }
 
@@ -296,25 +284,17 @@ function configurar() {
     //location.href = "configurar.py";
 }
 
-/*function showmenu() {
-    menu.className = "menu-visible";
+function showmenu() {
+    menu.style.left = "0px";
 }
 
 function hiddemenu() {
-    menu.className = "menu-hidden";
-}*/
-
-function btnmenuclick() {
-    if (menu.className == "menu-hidden" || menu.className == "menu-start") {
-        menu.className = "menu-visible";
-    } else {
-        menu.className = "menu-hidden";
-    }
+    menu.style.left = "-500px";
 }
 
 window.onload = function () {
     menu = document.getElementById("left-menu");
-    darea = new GCanvas(360, 320);
+    darea = new GCanvas(405, 320);
     document.getElementById("drawarea").appendChild(darea);
     //updatemode();
     draw();

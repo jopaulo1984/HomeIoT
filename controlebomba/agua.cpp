@@ -281,17 +281,51 @@ bool AbastAgua::isBtnOnPress() {
   return digitalRead(BTN_ON) > 0;
 }
 
-String AbastAgua::getJSON() {
-  return "{""\"state""\":" + String(pump.getState(),DEC) + ",""\"level""\":" + String(caixa.getLevel(),DEC) + 
-            ",""\"timelocked""\":" + String(pump.getTimeLocked(),DEC) +
-            ",""\"volumecount""\":" + String(pump.getVolumeCount(),DEC) + 
-            ",""\"volumel""\":" + String(pump.getVolumeL(),DEC) + 
-            ",""\"volumem3""\":" + String(pump.getVolumeM3(),DEC) + 
-            ",""\"flowrate""\":"+  String(pump.getFlowRate(), 1) +
-            ",""\"pump""\":"+ String(pump.isOn()) +            
-            ",""\"tlock""\":" + String(pump.getTLock(),DEC) +
-            ",""\"tpriming""\":" + String(pump.getTPriming(),DEC) + 
-            ",""\"manual""\":" + (isModeManual() ? "1" : "0") + "}";
+/*String AbastAgua::getJSON() {
+  return "{""\"state""\":" + String(pump.getState(), DEC) + 
+  ",""\"level""\":" + String(caixa.getLevel(), DEC) + 
+  ",""\"timelocked""\":" + String(pump.getTimeLocked(), DEC) +
+  ",""\"volumecount""\":" + String(pump.getVolumeCount(), DEC) + 
+  ",""\"volumel""\":" + String(pump.getVolumeL(), DEC) + 
+  ",""\"volumem3""\":" + String(pump.getVolumeM3(), DEC) + 
+  ",""\"flowrate""\":" + String(pump.getFlowRate(), 1) +
+  ",""\"pump""\":"+ (pump.isOn() ? "1" : "0") +
+  ",""\"tlock""\":" + String(pump.getTLock(), DEC) +
+  ",""\"tpriming""\":" + String(pump.getTPriming(), DEC) +
+  ",""\"manual""\":" + (isModeManual() ? "1" : "0") + "}";
+}*/
+
+void AbastAgua::printJSONStatus(bool ln = true) {
+  Serial.print("{\"state\":" + String(pump.getState(), DEC) + 
+  ",\"pump\":" + (pump.isOn() ? "1" : "0") + 
+  ",\"manual\":" + (isModeManual() ? "1" : "0") +"}");
+  if (ln) {
+    Serial.println("");
+  }
+}
+
+void AbastAgua::printJSONMeasures(bool ln = true) {
+  Serial.print("{");
+  Serial.print("\"cxlevel\":"); Serial.print(String(caixa.getLevel(), DEC));
+  Serial.print(",\"vcount\":"); Serial.print(String(pump.getVolumeCount(), DEC));
+  Serial.print(",\"flowr\":"); Serial.print(String(pump.getFlowRate(), 1));
+  Serial.print("}");
+  if (ln) {
+    Serial.println("");
+  }
+}
+
+void AbastAgua::printJSONInfos() {
+  Serial.print("{\"counts\":{");
+  Serial.print("\"volumel\":" + String(pump.getVolumeL(), DEC));
+  Serial.print(",\"volumem3\":" + String(pump.getVolumeM3(), DEC));
+  Serial.print(",\"tlock\":" + String(pump.getTLock(), DEC));
+  Serial.print(",\"tpriming\":" + String(pump.getTPriming(), DEC));
+  Serial.print("},\"measures\":");
+  printJSONMeasures(false);
+  Serial.print(",\"status\":");
+  printJSONStatus(false);
+  Serial.println("}");
 }
 
 void AbastAgua::reset() {
