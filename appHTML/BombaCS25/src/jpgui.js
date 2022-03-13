@@ -399,7 +399,7 @@ function newJPMask(args={}) {
   element.style.left = "0px";
   element.style.width = "100%";
   element.style.height = "100%";
-  element.style.background = 'rgba(0,0,0,0.5)';
+  element.style.background = 'rgba(0,0,0,0.6)';
 
   element.destroy = function () {
     var body = document.getElementsByTagName("body")[0];
@@ -816,4 +816,15 @@ function newInput(width, props={}) {
   var self = newJPInput(props);
   self.style.width = width + "px";
   return self;
+}
+
+function newJPLoader(args={}) {
+    loader = newElement("div", {parent: self});
+    loader.className = "loader";
+    self = newJPDialog({content: loader});
+    self.className += " loader-dialog"
+    self.setProperties(args);
+    self.alignCenter();
+    self.show();
+    return self;
 }

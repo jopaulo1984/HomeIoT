@@ -1,0 +1,4 @@
+{
+    "configuration": "FlashFreq=80,PartitionScheme=default,CPUFreq=240,UploadSpeed=921600",
+    "board": "esp32:esp32:lolin32"
+}

@@ -1,0 +1,16 @@
+<project name="HomeIoTMaster.ldp" compilecmd="C:\Users\Joao\OneDrive\Arduino\HomeIoT\HomeIoTServer\ldcompiler.bat" compileargs="&quot;$(PROJ_DIR)$(PROJ_NAME).il&quot;">
+  <diagrams>
+    <start>
+
+    </start>
+
+    <main>
+        <diagram file="main" />
+
+    </main>
+
+    <functions>
+
+    </functions>
+  </diagrams>
+</project>

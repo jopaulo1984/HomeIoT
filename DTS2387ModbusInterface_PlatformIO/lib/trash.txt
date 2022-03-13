@@ -1,0 +1,185 @@
+
+
+/*
+void load_configs() {
+  Serial.println("carregando o arquivo de configuração");
+  File f = SPIFFS.open("/configs.txt", "r");
+  if (!f) {
+    Serial.println("Erro ao iniciar o arquivo de configuração.");
+    while(1==1); //loop infinito. necessário reset manual
+  }
+
+  wmstate = f.readStringUntil('\n').toInt();
+  wifi_ssid = f.readStringUntil('\n');
+  wifi_pass = f.readStringUntil('\n');
+  broker = f.readStringUntil('\n');
+  mqtt_port = f.readStringUntil('\n').toInt();
+  publish = f.readStringUntil('\n');
+  subscribe = f.readStringUntil('\n');
+
+  f.close();
+
+  //removendo espaços no começo e fim da string
+  wifi_ssid.trim();
+  wifi_pass.trim();
+  broker.trim();
+  publish.trim();
+  subscribe.trim();
+
+  Serial.println("wmstate: " + String(wmstate));
+  Serial.println("wifi_ssid: " + wifi_ssid);
+  Serial.println("wifi_pass: " + wifi_pass);
+  Serial.println("broker: " + broker);
+  Serial.println("mqtt_port: " + String(mqtt_port));
+  Serial.println("publish: " + publish);
+  Serial.println("subscribe: " + subscribe);
+  Serial.println("Feito!");
+
+}
+
+void save_configs() {
+  Serial.println("Salvando configurações...");
+  File f = SPIFFS.open("/configs.txt", "w");
+  if (!f) {
+    Serial.println("Erro ao salvar o arquivo de configuração.");
+    return; //loop infinito
+  }
+  f.println(wmstate);
+  f.println(wifi_ssid);
+  f.println(wifi_pass);
+  f.println(broker);
+  f.println(mqtt_port);
+  f.println(publish);
+  f.println(subscribe);
+  f.close();
+  Serial.println("Configurações salvas.");
+}
+
+int db_to_percent(int db) {
+  if (db < -100) {
+    return 0;
+  }
+  if (db >= -50) {
+    return 100;
+  }
+  return 2 * (db + 100);
+}
+
+String get_mng_html() {
+  String html = "<!DOCTYPE html>\n";
+  html += "<html lang=\"pt-br\">\n";
+  html += "    <head>\n";
+  html += "        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
+  html += "        <meta charset=\"utf-8\"/>\n";
+  html += "        <title>DTS238-7 Medidor - Configuração</title>\n";
+  html += "        <style>\n";
+  html += "        form {\n";
+  html += "            background-color: #adf;\n";
+  html += "            padding: 20px;\n";
+  html += "        }\n";
+  html += "        input, select {\n";
+  html += "            border: 1px solid #7f7f7f;\n";
+  html += "            padding: 5px;\n";
+  html += "            border-radius: 5px;\n";
+  html += "            font-size: 1em;\n";
+  html += "         }\n";
+  html += "         .buttons {text-align: right;}\n";
+  html += "        </style>\n";
+  html += "    </head>\n";
+  html += "    <body>\n";
+  html += "        <form method=\"post\" action=\"./save_configs\">\n";
+  html += "            <h3><center>DTS238-7 Medidor - Configuração</center></h3>\n";
+  html += "            <table>\n";
+  html += "                <tr><td colspan=\"2\"> -----  WiFi -----</td></tr>";
+  html += "                <tr>\n";
+  html += "                    <td>SSID</td>\n";
+  html += "                    <td>\n";
+  html += "                        <select name=\"ssid\" value=\"" + wifi_ssid + "\" required>";
+
+  int ssids_count = WiFi.scanNetworks();
+  for (int i = 0; i < ssids_count; i++) {
+    String __ssid = WiFi.SSID(i);
+    int __sign = WiFi.RSSI(i);
+    html += "                            <option value=\"" + __ssid + "\">" + __ssid + " | "  + String(db_to_percent(__sign)) + "%</option>\n";
+  }
+
+  html += "                        </select>\n";
+  html += "                    </td>\n";
+  html += "                </tr>\n";
+  html += "                <tr><td>Senha</td><td><input name=\"pass\" type=\"password\" value=\"" + wifi_pass + "\" required></td></tr>\n";
+  html += "                <tr><td colspan=\"2\"> -----  MQTT -----</td></tr>";
+  html += "                <tr><td>Broker</td><td><input name=\"broker\" type=\"text\" value=\"" + broker + "\" required></td></tr>\n";
+  html += "                <tr><td>Porta</td><td><input name=\"mqtt_port\" type=\"text\" value=\"" + String(mqtt_port) + "\" required pattern=\"\\d+\"></td></tr>\n";
+  html += "                <tr><td>Publish</td><td><input name=\"publish\" type=\"text\" value=\"" + publish + "\" required></td></tr>\n";
+  html += "                <tr><td>Subscribe</td><td><input name=\"subscribe\" type=\"text\" value=\"" + subscribe + "\" required></td></tr>\n";
+  html += "            </table>\n";
+  html += "            <div class=\"buttons\"><input type=\"submit\" value=\"Salvar\"></div>\n";
+  html += "        </form>\n";
+  html += "    </body>\n";
+  html += "</html>";
+  return html;
+}
+
+String html_message(String msg) {
+  String html = "<!DOCTYPE html>\n";
+  html += "<html>\n";
+  html += "    <head>\n";
+  html += "        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
+  html += "        <meta charset=\"utf-8\"/>\n";
+  html += "        <title>DTS238-7 Medidor - Configuração</title>\n";
+  html += "        <style>\n";
+  html += "        msg-box {\n";
+  html += "            background-color: #adf;\n";
+  html += "            padding: 20px;\n";
+  html += "        }\n";
+  html += "        </style>\n";
+  html += "    </head>\n";
+  html += "    <body>\n";
+  html += "        <pre class\"msg-box\">";
+  html +=               msg;
+  html += "</pre>\n";
+  html += "    </body>\n";
+  html += "</html>";
+  return html;
+}
+
+void restart() {
+  WiFi.disconnect();
+  Serial.println("Reiniciando...");
+  delay(2000);
+  ESP.restart();
+  while(1==1);
+}
+
+void setup_wifi() {
+
+  Serial.println("Iniciando o wifi...");
+  Serial.print("Conectando");
+
+  WiFi.begin(wifi_ssid.c_str(), wifi_pass.c_str());
+
+  lastTime = millis();
+  while (1==1) {    
+    if (WiFi.status() == WL_CONNECTED) {
+      break;
+    }
+    else if (WiFi.status() == WL_CONNECT_FAILED) {
+      Serial.println("Ocorreu um erro ao tentar conectar.");
+      restart();
+    }
+    else if (millis() - lastTime > 60000) {
+      Serial.println("Tempo esgotado.");
+      restart();
+    }
+    delay(500);
+    Serial.print(".");
+  }
+
+  randomSeed(micros());
+  
+  Serial.println("Conectado!");
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());
+
+}
+*/

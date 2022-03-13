@@ -1,6 +1,6 @@
 ; init
 
-; Diagrama3
+; init
 
                 LD    1
                 ST    flbaixo
@@ -8,13 +8,14 @@
 
 mainloop:
 
+                CALL   main
                 CALL   Diagrama1
 
                 JMP   mainloop
 
-Diagrama1:
+main:
                 LD    1
-                SMZ   send("192.168.1.87", 30128, "GET INFO")
+                SMZ   send("192.168.1.87", 30128, "cmd=GET INFO")
 
                 LD    $("192.168.1.87:30128").status.manual
                 ST    bmb
@@ -48,7 +49,11 @@ CMP_1_0_EXIT:
 
                 RTN
 
-; functions
+Diagrama1:
+                LD    flowr
+                MUL   60
+                ST    fowrh
 
-Diagrama2:
                 RTN
+
+; functions

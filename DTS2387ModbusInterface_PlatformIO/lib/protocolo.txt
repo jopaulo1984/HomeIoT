@@ -1,0 +1,79 @@
+PROTOCOL:
+
+the host computer send code : address 03 00 00 00 02 CRC low byte CRC high byte (total 8 byte)
+
+(1) address code (1 byte) it is the same meter address from 1~ 247 , the meter defualt addres is 1 .
+(2) function code(1 byte) 03 . please use 03 function code to read data .
+(3)register adress (2 byte):0000
+(4) data number(2 byte):0002   read 2 pcs 16 bit data
+(5)CRC(2 byte):check code 
+
+meter send code: address 03 04 XX XX XX XX  CRC low byte CRC high byte (total 9 byte)
+
+(1) address code (1 byte) it is the same meter address from 1~ 247 , the meter defualt addres is 1 .
+(2) function code(1 byte) 03 . please use 03 function code to read data .
+(3)quantity (1 byte):4     .  means send data how many byte!
+(4) data (4 byte): 32 bit standard of IEEE754 floating-point  
+(5)CRC(2 byte):check code 
+
+example:
+read address which address is 0 :0
+
+send
+00 03 00 15 00 01 94 1F
+
+reply
+00 03 02 00 02 04 45 
+
+EXAMPLE
+read the meter which address is 1
+
+read the total energ which the energy is 10 kWh
+send
+01 03 00 00 00 02 c4 0b
+
+reply
+01 03 04 00 00 03 e8 crc16
+
+read the real voltage  which is 220V
+SEND
+01 03 00 0c 00 01 44 09 
+
+REPLY
+01 03 02 08 98 crc16
+
+READ REAL CURRENT WHICH IS 5A
+SEND
+01 03 00 0d 00 01 15 c9
+
+REPLY
+01 03 02 01 f4 crc16
+
+READ ACTIVE POWER WHICH IS 10.5 KW
+SEND
+01 03 00 0e 00 01 crc16
+
+REPLY
+01 03 02 29 04 crc16
+
+READ REACTIVE POWER WHICH IS 0.5 KVAR
+SEND
+01 03 00 0F 00 01 crc16
+
+REPLY
+01 03 02 01 F4 crc16
+
+READ THE POWER FACTOR  WHICH IS COS 0.99
+SEND
+01 03 00 10 00 01 crc16
+
+REPLY
+01 03 02 03 de crc16
+
+READ FREQUENCY WHICH IS 50.5
+SEND
+01 03 00 11 00 01 crc16
+
+REPLY
+01 03 02 13 ba crc16 
+

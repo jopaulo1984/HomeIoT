@@ -1,4 +1,4 @@
-<edit rowscount="9" columnscount="10" >
+<edit rowscount="11" columnscount="10" >
     <cells>
         <cell row="0" column="0" >
                 <component ctype="HWire"  leftnode="-1" rightnode="-1"/>

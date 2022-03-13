@@ -1,7 +1,7 @@
 
 body {
     margin: 0px;
-    font-size: 1.2em;
+    font-size: 1.0em;
     font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -22,7 +22,6 @@ header {
     display: flex;
     align-items: center;
     width: 100%;
-    font-size: 1.2em;
 }
 
 header > div {
@@ -32,6 +31,7 @@ header > div {
 header .title {
     display: flex;
     font-weight: bold;
+    font-size: 1.5em;
 }
 
 header .title > div:nth-child(2) {
@@ -79,12 +79,40 @@ header .title > div:nth-child(2) {
     font-size: 1.0em;
     border-radius: 5px;
     cursor: pointer;
-    width: 120px;
+    width: 100px;
 }
 
 .actions-buttons .button:active {
     background-color: #aaa;
     color: white;
+}
+
+.infos-panel div {
+    margin-top: 10px;
+}
+
+.table {
+    border-collapse: collapse;
+    font-size: 1.0em;
+    background-color: white;
+    width: 200px;
+    margin: auto;
+}
+
+.table th, .table td {    
+    border: 1px solid #aaa;
+    padding: 5px;
+    text-align: left;
+}
+
+.table th {
+    background-color: rgb(44, 44, 44);
+    color: white;
+    width: 50%;
+}
+
+.table td {
+    text-align: right;
 }
 
 @media (max-width: 545px) {

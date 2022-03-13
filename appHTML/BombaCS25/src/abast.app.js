@@ -24,6 +24,8 @@ var updating = false;
 var infos;
 var opmode;
 
+var REMOTE_IP = "192.168.2.106";
+
 function RequestPOST(url, dados, response) {
     var xhttp = new XMLHttpRequest();
 	
@@ -34,17 +36,17 @@ function RequestPOST(url, dados, response) {
             response(xhttp.responseText);
         }
     };
-
     xhttp.send(dados);
 }
 
+function sendCommand(cmd, response) {
+    RequestPOST(`http://${REMOTE_IP}:30128/`, `cmd=${cmd}`, function (rtext) {
+        response(rtext);
+    });
+}
+
 function newWaitWindow(msg) {
-    var message = newJPLabel({text: msg});
-    message.style.fontSize = "125%";
-    message.style.fontFamily = "'Monospace', 'Consolas'";
-    var dlg = newJPDialog({title: "  ", content: message});
-    dlg.show();
-    return dlg;
+    return newJPLoader({title: msg});
 }
 
 function updateInfos(onupdated) {
@@ -72,19 +74,22 @@ function showInfos() {
 
     updateInfos(function () {
 
-        var tab = newElement("table");
-        tab.className = "table";
+        var panel = newJPPanel({className: "infos-panel"});
 
         Object.keys(infos).forEach(function (key) {
-            var tr = newElement("tr", {parent: tab});
-            var th = newElement("td", {parent: tr});
-            var td = newElement("td", {parent: tr});
-            th.innerText = key;
-            td.innerText = infos[key];
+            newElement("div", {text: key, parent: newElement("tr", {parent: panel})});
+            var tab = newElement("table", {parent: panel});
+            tab.className = "table";
+            Object.keys(infos[key]).forEach(function (skey) {
+                var tr = newElement("tr", {parent: tab});
+                var th = newElement("th", {parent: tr});
+                var td = newElement("td", {parent: tr});
+                th.innerText = skey;
+                td.innerText = infos[key][skey];
+            });
         });
-
-        //var bok = newJPDialogButton();
-        var win = newJPDialog({title: 'Informações', content: tab, buttons: [newJPButton({text: 'Ok', result: ResponseResult.OK})]});
+        
+        var win = newJPDialog({title: 'Informações', content: panel, buttons: [newJPButton({text: 'Ok', result: ResponseResult.OK})]});
         win.showModal(function (sender, result) {
             sender.destroy();
         });
